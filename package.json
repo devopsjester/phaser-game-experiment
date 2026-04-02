@@ -1,0 +1,12 @@
+{
+  "name": "pac-dash",
+  "version": "1.0.0",
+  "description": "PAC-DASH – a Pac-Man themed Subway-Surfers style dodge game built with Phaser 3",
+  "scripts": {
+    "start": "npx serve . -p 8080"
+  },
+  "dependencies": {
+    "phaser": "^3.60.0"
+  },
+  "license": "MIT"
+}
