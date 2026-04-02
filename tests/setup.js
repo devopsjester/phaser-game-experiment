@@ -47,3 +47,21 @@ global.Phaser = Phaser;
 if (typeof window === 'undefined') {
   global.window = { addEventListener: noop };
 }
+
+/* ---- SoundManager mock (loaded before game.js) ---- */
+global.SoundManager = {
+  init: noop,
+  playWaka: noop,
+  playEatGhost: noop,
+  playPowerUp: noop,
+  playDeath: noop,
+  playGameOver: noop,
+  playFruit: noop,
+  startMusic: noop,
+  stopMusic: noop,
+  isSfxOn: () => true,
+  isMusicOn: () => true,
+  toggleSfx: () => true,
+  toggleMusic: () => true,
+  destroy: noop,
+};
