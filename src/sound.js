@@ -177,6 +177,11 @@ var SoundManager = (function () {
     var oscillators = [];
     var gains = [];
 
+    // Initialise _musicNodes early so schedulers can store timer IDs
+    _musicNodes = { oscillators: oscillators, gains: gains, master: master,
+                    _bassTimerId: null, _leadTimerId: null };
+    _musicPlaying = true;
+
     // Bass line – a looping sequence using a square wave
     var bassOsc = ctx.createOscillator();
     var bassGain = ctx.createGain();
@@ -247,10 +252,6 @@ var SoundManager = (function () {
       _musicNodes._leadTimerId = setTimeout(scheduleLead, leadNotes.length * leadStepTime * 1000 - _SCHEDULE_OVERLAP_MS);
     }
     scheduleLead();
-
-    _musicNodes = { oscillators: oscillators, gains: gains, master: master,
-                    _bassTimerId: null, _leadTimerId: null };
-    _musicPlaying = true;
   }
 
   function _stopMusic () {
