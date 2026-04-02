@@ -1,5 +1,8 @@
 # PAC-DASH 🟡👻
 
+[![CI](https://github.com/devopsjester/phaser-game-experiment/actions/workflows/ci.yml/badge.svg)](https://github.com/devopsjester/phaser-game-experiment/actions/workflows/ci.yml)
+[![Release](https://github.com/devopsjester/phaser-game-experiment/actions/workflows/release.yml/badge.svg)](https://github.com/devopsjester/phaser-game-experiment/actions/workflows/release.yml)
+
 A Pac-Man themed, Subway Surfers-style endless dodge game built with [Phaser 3](https://phaser.io/). All visuals are generated programmatically — no external image assets required.
 
 You control Pac-Man from a third-person perspective as ghosts, wafers, and fruit rush toward you down a three-lane road. Dodge ghosts, collect wafers for points, and grab fruit to activate a power-up that lets you eat ghosts for bonus points.
@@ -76,6 +79,10 @@ Jest is configured via `package.json` to pick up every `*.test.js` file in the `
 ## Project Structure
 
 ```
+├── .github/
+│   └── workflows/
+│       ├── ci.yml            # CI workflow (build & test)
+│       └── release.yml       # Release workflow (package & publish)
 ├── index.html        # Entry point
 ├── lib/
 │   └── phaser.min.js # Phaser 3.60 (committed for offline use)
@@ -90,6 +97,43 @@ Jest is configured via `package.json` to pick up every `*.test.js` file in the `
 │   └── gameOverScene.test.js # Game-over scene tests
 └── package.json
 ```
+
+## CI/CD
+
+This project uses [GitHub Actions](https://docs.github.com/en/actions) for continuous integration and releases.
+
+### CI Workflow (`.github/workflows/ci.yml`)
+
+Runs on every push and pull request to `main`:
+
+1. **Checkout** — clones the repository.
+2. **Setup Node.js 20** — installs the runtime with npm caching.
+3. **Install dependencies** — runs `npm ci`.
+4. **Run tests** — executes the full Jest test suite (`npm test`).
+5. **Package game** — copies `index.html`, `src/`, and `lib/` into a `dist/` directory.
+6. **Upload artifact** — uploads the packaged game as a downloadable build artifact (retained for 14 days).
+
+### Release Workflow (`.github/workflows/release.yml`)
+
+Runs when a version tag (`v*`) is pushed:
+
+1. **Checkout, setup, install, and test** — same as CI to ensure the release is healthy.
+2. **Package** — bundles the game files plus `README.md` and `package.json` into a zip archive (`pac-dash-<tag>.zip`).
+3. **Create GitHub Release** — publishes a new GitHub Release with auto-generated release notes and attaches the zip archive.
+
+### Creating a Release
+
+To publish a new release:
+
+```bash
+# Tag the current commit
+git tag v1.0.0
+
+# Push the tag to trigger the release workflow
+git push origin v1.0.0
+```
+
+The release workflow will automatically create a GitHub Release with the packaged game attached as a `.zip` file. Users can download the zip, extract it, and open `index.html` in any modern browser to play — no server or build step required.
 
 ## License
 
