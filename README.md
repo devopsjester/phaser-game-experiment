@@ -49,6 +49,30 @@ npm start
 
 This runs `npx serve . -p 8080` and serves the game at [http://localhost:8080](http://localhost:8080).
 
+## Running Tests
+
+The project uses [Jest](https://jestjs.io/) for automated testing. Tests cover the perspective math, game constants, collision logic, scoring, power-ups, difficulty ramping, and scene lifecycle.
+
+```bash
+# Install dependencies (includes Jest)
+npm install
+
+# Run the full test suite
+npm test
+```
+
+Jest is configured via `package.json` to pick up every `*.test.js` file in the `tests/` directory. A small setup file (`tests/setup.js`) provides a minimal Phaser mock so that game logic can run in Node.js without a browser.
+
+### What Is Tested
+
+| Test file | Coverage |
+|-----------|----------|
+| `perspPos.test.js` | Perspective projection helper — horizon, player plane, linearity, spread |
+| `constants.test.js` | Game constants — canvas, road/lane layout, depth, scoring, difficulty |
+| `config.test.js` | Phaser configuration — dimensions, scenes, renderer |
+| `gameScene.test.js` | Core gameplay — init state, wafer/fruit/ghost collisions, power-ups, difficulty ramp, game over, object lifecycle |
+| `gameOverScene.test.js` | Game-over screen — score passing, scene restart |
+
 ## Project Structure
 
 ```
@@ -57,6 +81,13 @@ This runs `npx serve . -p 8080` and serves the game at [http://localhost:8080](h
 │   └── phaser.min.js # Phaser 3.60 (committed for offline use)
 ├── src/
 │   └── game.js       # All game logic and scenes
+├── tests/
+│   ├── setup.js              # Phaser mock for Node.js / Jest
+│   ├── perspPos.test.js      # Perspective helper tests
+│   ├── constants.test.js     # Game constants tests
+│   ├── config.test.js        # Phaser config tests
+│   ├── gameScene.test.js     # Core gameplay logic tests
+│   └── gameOverScene.test.js # Game-over scene tests
 └── package.json
 ```
 
