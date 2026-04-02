@@ -12,6 +12,7 @@ var SoundManager = (function () {
   var _musicOn = true;
   var _musicNodes = null;  // { oscillators, gains, master } for stopping music
   var _musicPlaying = false;
+  var _SCHEDULE_OVERLAP_MS = 50; // ms overlap to avoid gaps between scheduling batches
 
   // ---- persistence ----
   function _loadPrefs () {
@@ -199,7 +200,7 @@ var SoundManager = (function () {
         var t = now + i * bassStepTime;
         bassOsc.frequency.setValueAtTime(bassNotes[i], t);
       }
-      _musicNodes._bassTimerId = setTimeout(scheduleBass, bassNotes.length * bassStepTime * 1000 - 50);
+      _musicNodes._bassTimerId = setTimeout(scheduleBass, bassNotes.length * bassStepTime * 1000 - _SCHEDULE_OVERLAP_MS);
     }
     scheduleBass();
 
@@ -243,7 +244,7 @@ var SoundManager = (function () {
         leadGain.gain.setValueAtTime(0.06, t);
         leadGain.gain.exponentialRampToValueAtTime(0.01, t + leadStepTime * 0.8);
       }
-      _musicNodes._leadTimerId = setTimeout(scheduleLead, leadNotes.length * leadStepTime * 1000 - 50);
+      _musicNodes._leadTimerId = setTimeout(scheduleLead, leadNotes.length * leadStepTime * 1000 - _SCHEDULE_OVERLAP_MS);
     }
     scheduleLead();
 

@@ -52,6 +52,34 @@ function perspPos (laneX, depth) {
   };
 }
 
+// ---- shared sound toggle UI helper ----
+function createSoundToggles (scene, x, y, fontSize, onColor, offColor) {
+  var sfxLabel = SoundManager.isSfxOn() ? 'SFX:ON' : 'SFX:OFF';
+  var musLabel = SoundManager.isMusicOn() ? 'MUS:ON' : 'MUS:OFF';
+  var style = { fontSize: fontSize, fontFamily: '"Press Start 2P", monospace', color: onColor };
+
+  var sfxBtn = scene.add.text(x, y, sfxLabel, style).setOrigin(0, 0.5).setInteractive();
+  var musBtn = scene.add.text(x + 65, y, musLabel, style).setOrigin(0, 0.5).setInteractive();
+
+  sfxBtn.setColor(SoundManager.isSfxOn() ? onColor : offColor);
+  musBtn.setColor(SoundManager.isMusicOn() ? onColor : offColor);
+
+  sfxBtn.on('pointerdown', function (ptr) {
+    if (ptr && ptr.event && ptr.event.stopPropagation) ptr.event.stopPropagation();
+    var on = SoundManager.toggleSfx();
+    sfxBtn.setText(on ? 'SFX:ON' : 'SFX:OFF');
+    sfxBtn.setColor(on ? onColor : offColor);
+  });
+  musBtn.on('pointerdown', function (ptr) {
+    if (ptr && ptr.event && ptr.event.stopPropagation) ptr.event.stopPropagation();
+    var on = SoundManager.toggleMusic();
+    musBtn.setText(on ? 'MUS:ON' : 'MUS:OFF');
+    musBtn.setColor(on ? onColor : offColor);
+  });
+
+  return { sfxBtn: sfxBtn, musBtn: musBtn };
+}
+
 // =============================================================
 // SCENE: BOOT  --  creates every texture programmatically
 // =============================================================
@@ -264,36 +292,12 @@ class MenuScene extends Phaser.Scene {
     this.tweens.add({ targets: start, alpha: 0.15, duration: 420, yoyo: true, repeat: -1 });
 
     // ---- Sound toggle buttons ----
-    this._createSoundToggles(W, H);
+    createSoundToggles(this, W - 110, H - 26, '8px', '#888888', '#444444');
 
     this.input.once('pointerdown', () => {
       SoundManager.init();
       this.scene.start('Game');
     });
-  }
-
-  _createSoundToggles (W, H) {
-    var sfxLabel = SoundManager.isSfxOn() ? 'SFX:ON' : 'SFX:OFF';
-    var musLabel = SoundManager.isMusicOn() ? 'MUS:ON' : 'MUS:OFF';
-    var style = { fontSize: '8px', fontFamily: '"Press Start 2P", monospace', color: '#888888' };
-
-    var sfxBtn = this.add.text(W - 110, H - 26, sfxLabel, style).setOrigin(0, 0.5).setInteractive();
-    var musBtn = this.add.text(W - 45, H - 26, musLabel, style).setOrigin(0, 0.5).setInteractive();
-
-    sfxBtn.on('pointerdown', function (ptr) {
-      ptr.event.stopPropagation();
-      var on = SoundManager.toggleSfx();
-      sfxBtn.setText(on ? 'SFX:ON' : 'SFX:OFF');
-      sfxBtn.setColor(on ? '#888888' : '#444444');
-    });
-    musBtn.on('pointerdown', function (ptr) {
-      ptr.event.stopPropagation();
-      var on = SoundManager.toggleMusic();
-      musBtn.setText(on ? 'MUS:ON' : 'MUS:OFF');
-      musBtn.setColor(on ? '#888888' : '#444444');
-    });
-    sfxBtn.setColor(SoundManager.isSfxOn() ? '#888888' : '#444444');
-    musBtn.setColor(SoundManager.isMusicOn() ? '#888888' : '#444444');
   }
 }
 
@@ -488,25 +492,9 @@ class GameScene extends Phaser.Scene {
 
     // Sound toggles at bottom of screen
     var H = this.scale.height;
-    var toggleStyle = { fontSize: '7px', fontFamily: '"Press Start 2P", monospace', color: '#555555' };
-    this._sfxBtn = this.add.text(W - 105, H - 14, SoundManager.isSfxOn() ? 'SFX:ON' : 'SFX:OFF', toggleStyle)
-      .setOrigin(0, 0.5).setDepth(195).setInteractive();
-    this._musBtn = this.add.text(W - 45, H - 14, SoundManager.isMusicOn() ? 'MUS:ON' : 'MUS:OFF', toggleStyle)
-      .setOrigin(0, 0.5).setDepth(195).setInteractive();
-
-    this._sfxBtn.setColor(SoundManager.isSfxOn() ? '#555555' : '#333333');
-    this._musBtn.setColor(SoundManager.isMusicOn() ? '#555555' : '#333333');
-
-    this._sfxBtn.on('pointerdown', function () {
-      var on = SoundManager.toggleSfx();
-      this._sfxBtn.setText(on ? 'SFX:ON' : 'SFX:OFF');
-      this._sfxBtn.setColor(on ? '#555555' : '#333333');
-    }, this);
-    this._musBtn.on('pointerdown', function () {
-      var on = SoundManager.toggleMusic();
-      this._musBtn.setText(on ? 'MUS:ON' : 'MUS:OFF');
-      this._musBtn.setColor(on ? '#555555' : '#333333');
-    }, this);
+    var toggles = createSoundToggles(this, W - 105, H - 14, '7px', '#555555', '#333333');
+    toggles.sfxBtn.setDepth(195);
+    toggles.musBtn.setDepth(195);
   }
 
   _updateHUD () {
