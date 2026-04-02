@@ -789,3 +789,18 @@ const config = {
 };
 
 window.addEventListener('load', function() { new Phaser.Game(config); });
+
+// ---- Export for testing (Node.js / Jest) ----
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = {
+    GAME_W, GAME_H, VP_X, VP_Y, PLAYER_Y,
+    ROAD_L, ROAD_R, LANE_X,
+    DEPTH_SPEED_BASE, DEPTH_SPEED_MAX, COLLISION_DEPTH, COLLISION_TOL,
+    POWER_DURATION, POWER_WARNING_TIME, MAX_LIVES,
+    WAFER_POINTS, GHOST_EAT_POINTS, FRUIT_POINTS,
+    SPAWN_INTERVAL_BASE, SPAWN_INTERVAL_MIN, DIFFICULTY_INTERVAL,
+    perspPos,
+    BootScene, MenuScene, GameScene, GameOverScene,
+    config,
+  };
+}

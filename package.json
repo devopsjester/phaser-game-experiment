@@ -3,10 +3,21 @@
   "version": "1.0.0",
   "description": "PAC-DASH – a Pac-Man themed Subway-Surfers style dodge game built with Phaser 3",
   "scripts": {
-    "start": "npx serve . -p 8080"
+    "start": "npx serve . -p 8080",
+    "test": "jest --verbose"
   },
   "dependencies": {
     "phaser": "^3.60.0"
   },
-  "license": "MIT"
+  "devDependencies": {
+    "jest": "^29.7.0"
+  },
+  "jest": {
+    "testMatch": ["**/tests/**/*.test.js"],
+    "setupFiles": ["./tests/setup.js"]
+  },
+  "license": "MIT",
+  "devDependencies": {
+    "jest": "^30.3.0"
+  }
 }
