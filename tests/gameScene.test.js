@@ -74,6 +74,8 @@ function mockText () {
     setVisible: jest.fn().mockReturnThis(),
     setColor: jest.fn().mockReturnThis(),
     setAlpha: jest.fn().mockReturnThis(),
+    setInteractive: jest.fn().mockReturnThis(),
+    on: jest.fn().mockReturnThis(),
     destroy: jest.fn(),
     text: '',
   };

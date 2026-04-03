@@ -52,6 +52,34 @@ function perspPos (laneX, depth) {
   };
 }
 
+// ---- shared sound toggle UI helper ----
+function createSoundToggles (scene, x, y, fontSize, onColor, offColor) {
+  var sfxLabel = SoundManager.isSfxOn() ? 'SFX:ON' : 'SFX:OFF';
+  var musLabel = SoundManager.isMusicOn() ? 'MUS:ON' : 'MUS:OFF';
+  var style = { fontSize: fontSize, fontFamily: '"Press Start 2P", monospace', color: onColor };
+
+  var sfxBtn = scene.add.text(x, y, sfxLabel, style).setOrigin(0, 0.5).setInteractive();
+  var musBtn = scene.add.text(x + 65, y, musLabel, style).setOrigin(0, 0.5).setInteractive();
+
+  sfxBtn.setColor(SoundManager.isSfxOn() ? onColor : offColor);
+  musBtn.setColor(SoundManager.isMusicOn() ? onColor : offColor);
+
+  sfxBtn.on('pointerdown', function (ptr) {
+    if (ptr && ptr.event && ptr.event.stopPropagation) ptr.event.stopPropagation();
+    var on = SoundManager.toggleSfx();
+    sfxBtn.setText(on ? 'SFX:ON' : 'SFX:OFF');
+    sfxBtn.setColor(on ? onColor : offColor);
+  });
+  musBtn.on('pointerdown', function (ptr) {
+    if (ptr && ptr.event && ptr.event.stopPropagation) ptr.event.stopPropagation();
+    var on = SoundManager.toggleMusic();
+    musBtn.setText(on ? 'MUS:ON' : 'MUS:OFF');
+    musBtn.setColor(on ? onColor : offColor);
+  });
+
+  return { sfxBtn: sfxBtn, musBtn: musBtn };
+}
+
 // =============================================================
 // SCENE: BOOT  --  creates every texture programmatically
 // =============================================================
@@ -263,7 +291,13 @@ class MenuScene extends Phaser.Scene {
     }).setOrigin(0.5);
     this.tweens.add({ targets: start, alpha: 0.15, duration: 420, yoyo: true, repeat: -1 });
 
-    this.input.once('pointerdown', () => this.scene.start('Game'));
+    // ---- Sound toggle buttons ----
+    createSoundToggles(this, W - 110, H - 26, '8px', '#888888', '#444444');
+
+    this.input.once('pointerdown', () => {
+      SoundManager.init();
+      this.scene.start('Game');
+    });
   }
 }
 
@@ -344,6 +378,9 @@ class GameScene extends Phaser.Scene {
       const margin = (ROAD_R - ROAD_L) * 0.06;
       this.player.x = Phaser.Math.Clamp(ptr.x, ROAD_L + margin, ROAD_R - margin);
     });
+
+    // Start background music
+    SoundManager.startMusic();
   }
 
   // ---- static background ----
@@ -452,6 +489,12 @@ class GameScene extends Phaser.Scene {
       this._lifeIcons.push(ic);
     }
     this._updateHUD();
+
+    // Sound toggles at bottom of screen
+    var H = this.scale.height;
+    var toggles = createSoundToggles(this, W - 105, H - 14, '7px', '#555555', '#333333');
+    toggles.sfxBtn.setDepth(195);
+    toggles.musBtn.setDepth(195);
   }
 
   _updateHUD () {
@@ -510,6 +553,7 @@ class GameScene extends Phaser.Scene {
     this._pBarBg.setVisible(true);
     this._pBarFg.setVisible(true);
     this._pLabel.setVisible(true);
+    SoundManager.playPowerUp();
   }
 
   _deactivatePower () {
@@ -583,6 +627,9 @@ class GameScene extends Phaser.Scene {
     const hi = this.registry.get('hiScore') || 0;
     if (this.score > hi) this.registry.set('hiScore', this.score);
 
+    SoundManager.stopMusic();
+    SoundManager.playGameOver();
+
     this.tweens.add({
       targets: this.player, scaleX: 0, scaleY: 0, duration: 700, ease: 'Back.In',
       onComplete: function() {
@@ -603,12 +650,14 @@ class GameScene extends Phaser.Scene {
         this._updateHUD();
         this._float(obj.sprite.x, obj.sprite.y, '+' + GHOST_EAT_POINTS, '#00FF00');
         this.cameras.main.shake(90, 0.012);
+        SoundManager.playEatGhost();
         obj.handled = true;
       } else if (!this.invincible) {
         this.lives = Math.max(0, this.lives - 1);
         this._updateHUD();
         this.cameras.main.shake(230, 0.025);
         this.cameras.main.flash(230, 255, 0, 0, false);
+        SoundManager.playDeath();
         obj.handled = true;
         if (this.lives <= 0) this._gameOver();
         else this._startInvincible();
@@ -618,11 +667,13 @@ class GameScene extends Phaser.Scene {
       this.score += WAFER_POINTS;
       this._updateHUD();
       this._float(obj.sprite.x, obj.sprite.y, '+' + WAFER_POINTS, '#FFDEAD');
+      SoundManager.playWaka();
       obj.handled = true;
     } else if (obj.type === 'fruit') {
       this.score += FRUIT_POINTS;
       this._updateHUD();
       this._float(obj.sprite.x, obj.sprite.y, 'POWER UP!', '#FF69B4');
+      SoundManager.playFruit();
       this._activatePower();
       obj.handled = true;
     }
