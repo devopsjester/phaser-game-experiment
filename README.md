@@ -81,13 +81,15 @@ Jest is configured via `package.json` to pick up every `*.test.js` file in the `
 ```
 ├── .github/
 │   └── workflows/
-│       ├── ci.yml            # CI workflow (build & test)
-│       └── release.yml       # Release workflow (package & publish)
-├── index.html        # Entry point
+│       ├── azure-static-web-apps.yml  # Azure Static Web Apps deploy
+│       ├── ci.yml                     # CI workflow (build & test)
+│       └── release.yml                # Release workflow (package & publish)
+├── index.html                # Entry point
+├── staticwebapp.config.json  # Azure Static Web Apps route config
 ├── lib/
-│   └── phaser.min.js # Phaser 3.60 (committed for offline use)
+│   └── phaser.min.js         # Phaser 3.60 (committed for offline use)
 ├── src/
-│   └── game.js       # All game logic and scenes
+│   └── game.js               # All game logic and scenes
 ├── tests/
 │   ├── setup.js              # Phaser mock for Node.js / Jest
 │   ├── perspPos.test.js      # Perspective helper tests
@@ -134,6 +136,78 @@ git push origin v1.0.0
 ```
 
 The release workflow will automatically create a GitHub Release with the packaged game attached as a `.zip` file. Users can download the zip, extract it, and open `index.html` in any modern browser to play — no server or build step required.
+
+### Azure Static Web Apps Workflow (`.github/workflows/azure-static-web-apps.yml`)
+
+Deploys the game to [Azure Static Web Apps](https://learn.microsoft.com/en-us/azure/static-web-apps/) on every push to `main`. Pull requests get automatic preview environments with unique URLs.
+
+1. **Checkout, setup, install, and test** — same as CI to ensure the deploy is healthy.
+2. **Deploy** — uploads the site to Azure Static Web Apps using the `Azure/static-web-apps-deploy@v1` action.
+3. **Close PR** — tears down the preview environment when a pull request is closed.
+
+## Deploying to Azure
+
+PAC-DASH is deployed to [Azure Static Web Apps](https://learn.microsoft.com/en-us/azure/static-web-apps/) (Free tier).
+
+### Prerequisites
+
+- An [Azure account](https://azure.microsoft.com/free) (the free tier is sufficient)
+- An Azure subscription (auto-created with a free account)
+
+### Setup via Azure Portal
+
+1. Go to [portal.azure.com](https://portal.azure.com) → **Create a resource** → search **Static Web App** → **Create**.
+2. Fill in the form:
+   - **Subscription**: your Azure subscription
+   - **Resource Group**: create new, e.g. `pac-dash-rg`
+   - **Name**: `pac-dash`
+   - **Plan type**: Free
+   - **Region**: choose one near your users
+   - **Source**: GitHub
+3. Sign in with GitHub and select:
+   - **Organization**: `devopsjester`
+   - **Repository**: `pac-dash-game`
+   - **Branch**: `main`
+4. Under **Build Details**:
+   - **Build Preset**: Custom
+   - **App location**: `/`
+   - **Api location**: *(leave blank)*
+   - **Output location**: *(leave blank)*
+5. Click **Review + Create** → **Create**.
+
+Azure will automatically add a deployment token as a GitHub repository secret named `AZURE_STATIC_WEB_APPS_API_TOKEN`. The workflow in `.github/workflows/azure-static-web-apps.yml` references this secret to authenticate deployments.
+
+> **Note:** If Azure creates its own workflow file during setup, you can safely delete it — this repository already includes the workflow at `.github/workflows/azure-static-web-apps.yml`.
+
+### Setup via Azure CLI
+
+```bash
+az login
+az group create --name pac-dash-rg --location eastus2
+az staticwebapp create \
+  --name pac-dash \
+  --resource-group pac-dash-rg \
+  --source https://github.com/devopsjester/pac-dash-game \
+  --location eastus2 \
+  --branch main \
+  --app-location "/" \
+  --output-location "" \
+  --login-with-github
+```
+
+### Accessing the Deployed Site
+
+After deployment, find your URL in the Azure Portal under your Static Web App's **Overview** page:
+
+```
+https://<generated-name>.azurestaticapps.net
+```
+
+### Custom Domain (Optional)
+
+1. In Azure Portal → your Static Web App → **Custom domains** → **Add**.
+2. Create a CNAME record in your DNS provider pointing to `<generated-name>.azurestaticapps.net`.
+3. Azure provisions a free SSL certificate automatically.
 
 ## License
 
